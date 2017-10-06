@@ -39,7 +39,7 @@ main = do xs  <- evaluate . force $ V.iterateN 1000000 (+0.1) 0
                               , bench "plus." $ nf (V.foldl'  (+)  0) xs
                               , bench "plusN" $ nf (V.foldl' plusN 0) xs
                               , bench "plusU" $ nf (V.foldl' plusU 0) xs
-                              , bench "plusU'" $ nf (V.foldl' plusU 0) xs
+                              , bench "plusU'" $ nf (V.foldl' plusU' 0) xs
                               -- , bench "plusUV" $ nf vsumU xs
                               , bench "plusD" $ nf (V.foldl' plusD 0) xs
                               -- , bench "plusDV" $ nf vsumD xs

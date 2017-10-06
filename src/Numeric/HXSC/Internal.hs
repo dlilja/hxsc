@@ -46,12 +46,6 @@ foreign import prim "fromintu64U"
 foreign import prim "fromintd64U"
   fromintd64U# :: Int# -> Double#
 
-foreign import prim "sqrtu64S"
-  sqrtu64S# :: Double# -> Double#
-
-foreign import prim "sqrtd64S"
-  sqrtd64S# :: Double# -> Double#
-
 foreign import prim "sqrtu64U"
   sqrtu64U# :: Double# -> Double#
 
