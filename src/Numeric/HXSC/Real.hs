@@ -5,10 +5,12 @@
 module Numeric.HXSC.Real where
 
 import Numeric.HXSC.Internal
+import Data.Ratio
 
 data Rounding = Up | Down
 
 newtype Rounded (direction :: Rounding) a = Rounded a
+  deriving (Show)
 
 minInt, maxInt :: Integer
 minInt = fromIntegral (minBound :: Int)
@@ -42,8 +44,23 @@ swapRounding Down = Up
 -- safeNegate :: Rounded d Double -> Rounded (swapRounding d) Double
 -- safeNegate (Rounded x) = Rounded (0-x)
 
-unsafeRound :: Rounded d a -> Rounded d' a
-unsafeRound (Rounded x) = Rounded x
+roundDown :: Rounded 'Down a -> Rounded 'Down a
+roundDown = id
+
+roundUp :: Rounded 'Up a -> Rounded 'Up a
+roundUp = id
+
+class UnsafeRoundable a where
+  type Unrounded a
+  unsafeRound :: a -> Rounded d (Unrounded a)
+
+instance UnsafeRoundable Double where
+  type Unrounded Double = Double
+  unsafeRound x = Rounded x
+
+instance UnsafeRoundable (Rounded d a) where
+  type Unrounded (Rounded d a) = a
+  unsafeRound (Rounded x) = Rounded x
 
 class SafeNegate a where
   type Negated a
@@ -90,3 +107,15 @@ instance Num (Rounded 'Down Double) where
 --   abs (Rounded x) = Rounded (abs x)
 --   signum (Rounded x) = Rounded (signum x)
 --   fromInteger n = Rounded (fromInteger n)
+
+instance Fractional (Rounded 'Up Double) where
+  (Rounded x) / (Rounded y) = Rounded $ divU x y
+  fromRational x =
+    let (n, rest) = divMod (numerator x) (denominator x)
+    in fromInteger n + fromInteger rest / fromInteger (denominator x)
+
+instance Fractional (Rounded 'Down Double) where
+  (Rounded x) / (Rounded y) = Rounded $ divD x y
+  fromRational x =
+    let (n, rest) = divMod (numerator x) (denominator x)
+    in fromInteger n + fromInteger rest / fromInteger (denominator x)
