@@ -4,6 +4,8 @@ import Numeric.HXSC
 import Numeric.HXSC.Internal
 
 import Text.Printf
+-- import qualified Data.Vector as V
+-- import qualified Data.Vector.Storable as V
 import qualified Data.Vector.Unboxed as V
 import System.Random.MWC
 

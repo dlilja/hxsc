@@ -19,11 +19,13 @@ library
   build-depends:       base >= 4.7 && < 5, ghc-prim
   c-sources:           cbits/round.S
   default-language:    Haskell2010
+  ghc-options:         -fllvm -O2
 
 executable example
   hs-source-dirs:      example
   main-is:             example.hs
   build-depends:       base >= 4.7 && < 5, hxsc, criterion, vector, mwc-random, deepseq
+  ghc-options:         -fllvm -O2
 
 source-repository head
   type:     git
