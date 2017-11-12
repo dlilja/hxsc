@@ -50,6 +50,14 @@ roundDown = id
 roundUp :: Rounded 'Up a -> Rounded 'Up a
 roundUp = id
 
+-- There must be a better way of doing this
+
+unpackUp :: Rounded 'Up a -> a
+unpackUp (Rounded a) = a
+
+unpackDown :: Rounded 'Down a -> a
+unpackDown (Rounded a) = a
+
 class UnsafeRoundable a where
   type Unrounded a
   unsafeRound :: a -> Rounded d (Unrounded a)
@@ -88,7 +96,7 @@ instance Num (Rounded 'Up Double) where
   -- TODO: I believe no exact rounding is needed for these
   abs (Rounded x) = Rounded (abs x)
   signum (Rounded x) = Rounded (signum x)
-  negate = error "Negate is not well defined for rounded numbers"
+  -- negate = error "Negate is not well defined for rounded numbers
 
 instance Num (Rounded 'Down Double) where
   (Rounded x) + (Rounded y) = Rounded $ plusD x y
@@ -98,7 +106,8 @@ instance Num (Rounded 'Down Double) where
   -- TODO: I believe no exact rounding is needed for these
   abs (Rounded x) = Rounded (abs x)
   signum (Rounded x) = Rounded (signum x)
-  negate = error "Negate is not well defined for rounded numbers"
+  -- The below seems to trigger when dividing by nonpositive intervals
+  -- negate = error "Negate is not well defined for rounded numbers"
 
 -- instance Num (Rounded 'Near Double) where
 --   (Rounded x) + (Rounded y) = Rounded $ x + y

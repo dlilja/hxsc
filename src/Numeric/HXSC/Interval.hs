@@ -3,7 +3,7 @@
 module Numeric.HXSC.Interval where
 
 import Numeric.HXSC.Real
-import Prelude hiding (elem)
+import Prelude hiding (elem, (**))
 
 data Interval a b = Interval { iInf :: {-# UNPACK #-} !a
                              , iSup :: {-# UNPACK #-} !b }
@@ -40,7 +40,7 @@ instance Num (RoundedInterval Double) where
       Above ->
         case position 0 int2 of
           Above -> Interval (inf1 * inf2) (sup1 * sup2)
-          Below -> Interval (unsafeRound sup1 * unsafeRound sup2) (unsafeRound inf1 * unsafeRound inf2)
+          Below -> Interval (unsafeRound sup1 * inf2) (unsafeRound inf1 * sup2)
           Intersects -> Interval (unsafeRound sup1 * inf2) (sup1 * sup2)
       Below ->
         case position 0 int2 of
@@ -78,6 +78,9 @@ instance Fractional (RoundedInterval Double) where
       (  _ , True) -> Interval (- (1 / 0)) (recip (unsafeRound inf))
       _      -> Interval (- (1 / 0)) (1 / 0)
 
+  (Interval inf1 sup1) / (Interval inf2 sup2) =
+    (Interval inf1 sup1) * (recip (Interval inf2 sup2))
+
 hull :: (Ord a, Ord b) => Interval a b -> Interval a b -> Interval a b
 hull (Interval inf1 sup1) (Interval inf2 sup2) = Interval (min inf1 inf2) (max sup1 sup2)
 
@@ -104,3 +107,36 @@ midpoint (Interval inf sup) = Interval ((inf + unsafeRound sup) / 2) ((unsafeRou
 
 diameter :: RoundedInterval Double -> RoundedInterval Double
 diameter (Interval inf sup) = Interval (unsafeRound sup - inf) (sup - unsafeRound inf)
+
+--------------------------
+-- Elementary functions --
+--------------------------
+
+square :: RoundedInterval Double -> RoundedInterval Double
+square int@(Interval inf sup) =
+  case position 0 int of
+    Above -> Interval (inf * inf) (sup * sup)
+    Below -> Interval (unsafeRound (sup * sup)) (unsafeRound (inf * inf))
+    Intersects -> Interval 0 (max (unsafeRound (inf * inf)) (sup * sup))
+
+-- Change to a different function to not clash with Prelude?
+(**) :: RoundedInterval Double -> Integer -> RoundedInterval Double
+x ** 0 = Interval 1 1
+x ** 1 = x
+x ** n | n > 1 = (square x) * (x ** (n-2))
+       | n < 0 = recip (x ** (-n))
+
+---------------
+-- Operators --
+---------------
+
+integrate :: (RoundedInterval Double -> RoundedInterval Double) -> RoundedInterval Double -> RoundedInterval Double
+integrate = id
+
+newtonOperator :: (RoundedInterval Double -> RoundedInterval Double)
+               -> (RoundedInterval Double -> RoundedInterval Double)
+               -> RoundedInterval Double -> RoundedInterval Double
+newtonOperator f f' x = x
+
+testFunc :: RoundedInterval Double -> RoundedInterval Double
+testFunc (Interval inf sup) = Interval (Rounded (exp $ unpackDown inf)) (Rounded (exp $ unpackUp sup))
